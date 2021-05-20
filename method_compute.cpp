@@ -4,8 +4,8 @@ double method_compute(int n, double a, double b, double x, double *state)
     int buf = 0;
     double h;
     double x_buf;
-    h = (b - a) / (n - 1);
-    for (int i = 0; i < n - 1; i++)
+    h = (b - a) / (double)(n - 1);
+    for (int i = -1; i < n; i++)
     {
         if (x < a + (i + 1) * h && x > a + i * h)
         {

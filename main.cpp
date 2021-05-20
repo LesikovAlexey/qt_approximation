@@ -45,6 +45,12 @@ int main(int argc, char *argv[])
   action = tool_bar->addAction("&Show error graph", graph_area, SLOT(show_err()));
   action->setShortcut(QString("3"));
 
+  action = tool_bar->addAction("&Add disturbance", graph_area, SLOT(add_disturb()));
+  action->setShortcut(QString("Alt++"));
+
+  action = tool_bar->addAction("&Subtract disturbance", graph_area, SLOT(sub_disturb()));
+  action->setShortcut(QString("Alt+-"));
+
   action = tool_bar->addAction("&Scale +", graph_area, SLOT(scale_up()));
   action->setShortcut(QString("+"));
 

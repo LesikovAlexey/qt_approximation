@@ -4,27 +4,32 @@
 int method2_init(int n, double a, double b, double *values, double *derivatives, double *state)
 {
     double h;
-    double *g;
-    double *d;
-    d = (double *)calloc(n * n, sizeof(double));
-    g = (double *)calloc(n, sizeof(double));
-
-    h = (b - a) / (n - 1);
-
+    double *g = NULL;
+    double *d = NULL;
+    d = (double *)malloc(n * n * sizeof(double));
+    g = (double *)malloc(n * sizeof(double));
+    h = (b - a) / (double)(n - 1);
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            d[i * n + j] = 0;
+        }
+        g[i] = 0;
+    }
     for (int i = 1; i < n - 1; i++)
     {
-        d[i - 1 + i * n] = h;
+        d[i + (i - 1) * n] = h;
         d[i + i * n] = 4 * h;
-        d[i + 1 + i * n] = h;
+        d[i + (1 + i) * n] = h;
         g[i] = 3 * h * ((values[i] - values[i - 1]) / h + (values[i + 1] - values[i]) / h);
     }
     d[0] = 2;
     d[1] = 1;
+    d[n - 1 + (n - 1) * (n - 3)] = 1;
+    d[n - 1 + (n - 1) * (n - 2)] = 2;
     g[0] = 3 * (values[1] - values[0]) / h;
-    d[n * n - 2] = 1;
-    d[n * n - 1] = 2;
     g[n - 1] = 3 * (values[n - 1] - values[n - 2]) / h;
-
     for (int i = 0; i < n; i++)
     {
         for (int k = i + 1; k < n; k++)
@@ -41,7 +46,7 @@ int method2_init(int n, double a, double b, double *values, double *derivatives,
             g[j] = g[j] - g[i] * d[j * n + i];
         }
     }
-    for (int i = n - 1; i > -1; i -= 1)
+    for (int i = n - 2; i > -1; i -= 1)
     {
         for (int j = i + 1; j < n; j++)
         {
@@ -56,6 +61,10 @@ int method2_init(int n, double a, double b, double *values, double *derivatives,
         state[i + 2] = (((values[i / 4 + 1] - values[i / 4]) / h) - g[i / 4]) / h;
         state[i + 3] = (g[i / 4] + g[i / 4 + 1] - 2 * ((values[i / 4 + 1] - values[i / 4]) / h)) / (h * h);
     }
+    state[4 * (n - 1)] = values[(n - 1)];
+    state[4 * (n - 1) + 1] = 0;
+    state[4 * (n - 1) + 2] = 0;
+    state[4 * (n - 1) + 3] = 0;
     free(g);
     free(d);
     return 0;

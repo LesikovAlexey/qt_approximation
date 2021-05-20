@@ -6,13 +6,9 @@
 #include <string>
 
 #include "window.h"
-#include "method_compute.h"
-#include "method1_init.h"
-#include "method2_init.h"
 
 #define DEFAULT_A -10
 #define DEFAULT_B 10
-#define DEFAULT_N 100
 
 static double f_0(double x)
 {
@@ -51,35 +47,52 @@ static double f_6(double x)
 
 double Window::f_file(double x)
 {
-  return this->file_values[(int)(((int)x - a) / ((b - a) / n))];
+  return this->file_values[(int)(((int)x - a) / ((b - a) / n_appr))];
 }
 
 double Window::f(double x)
 {
+
   switch (func_id)
   {
   case 0:
     f_name = "k = 0   f (x) = 1";
+    if (fabs(x - a - ((b - a) / (n_appr - 1)) * (n_appr / 2)) < 1e-13)
+      return f_0(x) + disturb * 0.1 * max_buf;
     return (f_0(x));
   case 1:
     f_name = "k = 1   f (x) = x";
+    if (fabs(x - a - ((b - a) / (n_appr - 1)) * (n_appr / 2)) < 1e-13)
+      return f_1(x) + disturb * 0.1 * max_buf;
     return (f_1(x));
   case 2:
     f_name = "k = 2   f (x) = x * x";
+    if (fabs(x - a - ((b - a) / (n_appr - 1)) * (n_appr / 2)) < 1e-13)
+      return f_2(x) + disturb * 0.1 * max_buf;
     return (f_2(x));
   case 3:
     f_name = "k = 3   f (x) = x * x * x";
+    if (fabs(x - a - ((b - a) / (n_appr - 1)) * (n_appr / 2)) < 1e-13)
+      return f_3(x) + disturb * 0.1 * max_buf;
     return (f_3(x));
   case 4:
     f_name = "k = 4   f (x) = x * x * x * x";
+    if (fabs(x - a - ((b - a) / (n_appr - 1)) * (n_appr / 2)) < 1e-13)
+      return f_4(x) + disturb * 0.1 * max_buf;
     return (f_4(x));
   case 5:
     f_name = "k = 5   f (x) = exp(x)";
+    if (fabs(x - a - ((b - a) / (n_appr - 1)) * (n_appr / 2)) < 1e-13)
+      return f_5(x) + disturb * 0.1 * max_buf;
     return (f_5(x));
   case 6:
     f_name = "k = 6   f (x) = 1 / (25 * x * x + 1)";
+    if (fabs(x - a - ((b - a) / (n_appr - 1)) * (n_appr / 2)) < 1e-13)
+      return f_6(x) + disturb * 0.1 * max_buf;
     return (f_6(x));
   case 7:
+    if (fabs(x - a - ((b - a) / (n_appr - 1)) * (n_appr / 2)) < 1e-13)
+      return this->f_file(x) + disturb * 0.1 * max_buf;
     return (this->f_file(x));
   default:
     return 0;
@@ -88,25 +101,61 @@ double Window::f(double x)
 
 int Window::Pf_init(int n_appr, double a, double b)
 {
-  double h = (b - a) / (n_appr - 1);
+  double h = (b - a) / (double)(n_appr - 1);
+  values = (double *)realloc(values, n_appr * sizeof(double));
+  file_values = (double *)realloc(file_values, n_appr * sizeof(double));
+  derivatives = (double *)realloc(derivatives, 2 * sizeof(double));
+  state = (double *)realloc(state, 4 * n_appr * sizeof(double));
+  for (int i = 0; i < n_appr; i++)
+  {
+    values[i] = 0;
+    file_values[i] = 0;
+  }
+  for (int i = 0; i < 4 * n_appr; i++)
+  {
+    state[i] = 0;
+  }
+  for (int i = 0; i < 2; i++)
+  {
+    derivatives[i] = 0;
+  }
   for (int i = 0; i < n_appr; i++)
   {
     values[i] = f(a + i * h);
   }
-  derivatives[0] = (f(a + h / 100) - f(a)) / (h / 100);
-  derivatives[1] = (f(b) - f(b - h / 100)) / (h / 100);
+  derivatives[0] = (f(a + h / 1e10) - f(a)) / (h / 1e10);
+  derivatives[1] = (f(b) - f(b - h / 1e10)) / (h / 1e10);
   method1_init(n_appr, a, b, values, derivatives, state);
   return 0;
 }
 
 int Window::Pf2_init(int n_appr, double a, double b)
 {
-  double h = (b - a) / (n_appr - 1);
+  double h = (b - a) / (double)(n_appr - 1);
+  values_2 = (double *)realloc(values_2, n_appr * sizeof(double));
+  file_values_2 = (double *)realloc(file_values_2, n_appr * sizeof(double));
+  derivatives_2 = (double *)realloc(derivatives_2, 2 * sizeof(double));
+  state_2 = (double *)realloc(state_2, 4 * n_appr * sizeof(double));
   for (int i = 0; i < n_appr; i++)
   {
-    values[i] = f(a + i * h);
+    values_2[i] = 0;
+    file_values_2[i] = 0;
   }
-  method2_init(n_appr, a, b, values, derivatives, state);
+  for (int i = 0; i < 4 * n_appr; i++)
+  {
+    state_2[i] = 0;
+  }
+  for (int i = 0; i < 2; i++)
+  {
+    derivatives_2[i] = 0;
+  }
+  for (int i = 0; i < n_appr; i++)
+  {
+    values_2[i] = f(a + i * h);
+  }
+  derivatives_2[0] = 0;
+  derivatives_2[1] = 0;
+  method2_init(n_appr, a, b, values_2, derivatives_2, state_2);
   return 0;
 }
 
@@ -115,9 +164,19 @@ double Window::Pf(double x, int n_appr)
   return method_compute(n_appr, a, b, x, state);
 }
 
+double Window::Pf_2(double x, int n_appr)
+{
+  return method_compute(n_appr, a, b, x, state_2);
+}
+
 double Window::Errf(double x, int n_appr)
 {
   return fabs(Pf(x, n_appr) - f(x));
+}
+
+double Window::Errf_2(double x, int n_appr)
+{
+  return fabs(Pf_2(x, n_appr) - f(x));
 }
 
 Window::Window(QWidget *parent)
@@ -125,22 +184,31 @@ Window::Window(QWidget *parent)
 {
   a = DEFAULT_A;
   b = DEFAULT_B;
-  n = DEFAULT_N;
+  n = width();
   n_appr = 20;
   working_with_file = 0;
   show_graph_1 = 1;
   show_graph_2 = 0;
   show_graph_err = 0;
   scale_parameter = 1;
-
+  disturb = 0;
+  max_buf = 0;
+  max_buf_1 = 0;
+  max_buf_2 = 0;
+  initialized = 0;
+  initialized_2 = 0;
   func_id = 6;
 
   change_func();
 
-  values = (double *)calloc(n, sizeof(double));
-  file_values = (double *)calloc(n, sizeof(double));
-  derivatives = (double *)calloc(2, sizeof(double));
-  state = (double *)calloc(4 * n, sizeof(double));
+  values = (double *)malloc(n_appr * sizeof(double));
+  file_values = (double *)malloc(n_appr * sizeof(double));
+  derivatives = (double *)malloc(2 * sizeof(double));
+  state = (double *)malloc(4 * n_appr * sizeof(double));
+  values_2 = (double *)malloc(n_appr * sizeof(double));
+  file_values_2 = (double *)malloc(n_appr * sizeof(double));
+  derivatives_2 = (double *)malloc(2 * sizeof(double));
+  state_2 = (double *)malloc(4 * n_appr * sizeof(double));
 }
 
 Window::~Window()
@@ -149,6 +217,10 @@ Window::~Window()
   free(file_values);
   free(derivatives);
   free(state);
+  free(values_2);
+  free(file_values_2);
+  free(derivatives_2);
+  free(state_2);
 }
 QSize Window::minimumSizeHint() const
 {
@@ -169,7 +241,7 @@ int Window::parse_command_line(int argc, char *argv[])
   if (argc == 2)
     return -1;
 
-  if (sscanf(argv[1], "%lf", &a) != 1 || sscanf(argv[2], "%lf", &b) != 1 || sscanf(argv[4], "%d", &func_id) != 1 || b - a < 1.e-6 || (argc > 3 && sscanf(argv[3], "%d", &n) != 1) || n <= 0 || func_id < 0 || func_id > 6)
+  if (sscanf(argv[1], "%lf", &a) != 1 || sscanf(argv[2], "%lf", &b) != 1 || sscanf(argv[4], "%d", &func_id) != 1 || b - a < 1.e-6 || (sscanf(argv[3], "%d", &n_appr) != 1) || n_appr <= 9 || func_id < 0 || func_id > 6)
     return -2;
   if (argc == 6)
   {
@@ -180,7 +252,7 @@ int Window::parse_command_line(int argc, char *argv[])
       fclose(input_file);
       return -3;
     }
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n_appr; i++)
     {
       if (fscanf(input_file, "%lf", &file_values[i]) != 1)
       {
@@ -194,7 +266,6 @@ int Window::parse_command_line(int argc, char *argv[])
   return 0;
 }
 
-/// change current function for drawing
 void Window::change_func()
 {
   func_id = (func_id + 1) % 7;
@@ -223,6 +294,8 @@ void Window::change_func()
     f_name = "k = 6   f (x) = 1 / (25 * x * x + 1)";
     break;
   }
+  initialized = 0;
+  initialized_2 = 0;
   update();
 }
 
@@ -237,32 +310,56 @@ void Window::change_func_file()
   {
     func_id = 7;
     f_name = "func from file";
+    initialized = 0;
+    initialized_2 = 0;
     update();
   }
 }
 void Window::add_n_appr()
 {
   n_appr += 10;
+  initialized = 0;
+  initialized_2 = 0;
   update();
 }
 
 void Window::reduce_n_appr()
 {
-  if (n_appr - 10 > 0)
+  if (n_appr - 10 > 9)
   {
     n_appr -= 10;
   }
+  initialized = 0;
+  initialized_2 = 0;
+  update();
+}
+
+void Window::add_disturb()
+{
+  disturb += 1;
+  initialized = 0;
+  initialized_2 = 0;
+  update();
+}
+
+void Window::sub_disturb()
+{
+  disturb -= 1;
+  initialized = 0;
+  initialized_2 = 0;
   update();
 }
 
 void Window::show_method_1()
 {
   show_graph_1 = (show_graph_1 + 1) % 2;
+  initialized = 0;
   update();
 }
 void Window::show_method_2()
 {
   show_graph_2 = (show_graph_2 + 1) % 2;
+  initialized_2 = 0;
   update();
 }
 void Window::show_err()
@@ -270,6 +367,8 @@ void Window::show_err()
   show_graph_err = (show_graph_err + 1) % 2;
   show_graph_1 = 0;
   show_graph_2 = 0;
+  initialized = 0;
+  initialized_2 = 0;
   update();
 }
 
@@ -286,17 +385,16 @@ void Window::scale_down()
     update();
   }
 }
-/// render graph
-void Window::paintEvent(QPaintEvent * /* event */)
+
+void Window::paintEvent(QPaintEvent * )
 {
   QPainter painter(this);
   double x1, x2, y1, y2;
   double max_y, min_y;
-  double delta_y, delta_x = (b - a) / n;
+  n = width();
+  double delta_y, delta_x = (b - a) / (n * scale_parameter);
 
   painter.setPen("black");
-
-  // calculate min and max for current function
   max_y = min_y = 0;
   for (x1 = a; x1 - b < 1.e-6; x1 += delta_x)
   {
@@ -311,24 +409,26 @@ void Window::paintEvent(QPaintEvent * /* event */)
   min_y -= delta_y;
   max_y += delta_y;
 
-  // save current Coordinate System
   painter.save();
 
-  // make Coordinate Transformations
   painter.translate(0.5 * width(), 0.5 * height());
   painter.scale(scale_parameter * width() / (b - a), -height() / (max_y - min_y));
   painter.translate(-0.5 * (a + b), -0.5 * (min_y + max_y));
 
-  // draw approximated line for graph
+
   if (show_graph_err == 0)
   {
+    max_buf = 0;
     x1 = a;
     y1 = f(x1);
     for (x2 = x1 + delta_x; x2 - b < 1.e-6; x2 += delta_x)
     {
       y2 = f(x2);
       painter.drawLine(QPointF(x1, y1), QPointF(x2, y2));
-
+      if (max_buf < fabs(y2))
+      {
+        max_buf = fabs(y2);
+      }
       x1 = x2, y1 = y2;
     }
     x2 = b;
@@ -339,7 +439,11 @@ void Window::paintEvent(QPaintEvent * /* event */)
   if (show_graph_1 == 1)
   {
     painter.setPen("blue");
-    Pf_init(n_appr, a, b);
+    if (initialized == 0)
+    {
+      Pf_init(n_appr, a, b);
+      initialized = 1;
+    }
     x1 = a;
     y1 = Pf(x1, n_appr);
     for (x2 = x1 + delta_x; x2 - b < 1.e-6; x2 += delta_x)
@@ -357,30 +461,44 @@ void Window::paintEvent(QPaintEvent * /* event */)
   if (show_graph_2 == 1)
   {
     painter.setPen("green");
-    Pf2_init(n_appr, a, b);
+    if (initialized_2 == 0)
+    {
+      Pf2_init(n_appr, a, b);
+      initialized_2 = 1;
+    }
     x1 = a;
-    y1 = Pf(x1, n_appr);
+    y1 = Pf_2(x1, n_appr);
     for (x2 = x1 + delta_x; x2 - b < 1.e-6; x2 += delta_x)
     {
-      y2 = Pf(x2, n_appr);
+      y2 = Pf_2(x2, n_appr);
       painter.drawLine(QPointF(x1, y1), QPointF(x2, y2));
 
       x1 = x2, y1 = y2;
     }
     x2 = b;
-    y2 = Pf(x2, n_appr);
+    y2 = Pf_2(x2, n_appr);
     painter.drawLine(QPointF(x1, y1), QPointF(x2, y2));
   }
 
   if (show_graph_err == 1)
   {
+    max_buf_1 = 0;
     painter.setPen("blue");
-    Pf_init(n_appr, a, b);
+    if (initialized == 0)
+    {
+      Pf_init(n_appr, a, b);
+      initialized = 1;
+    }
+
     x1 = a;
     y1 = Errf(x1, n_appr);
     for (x2 = x1 + delta_x; x2 - b < 1.e-6; x2 += delta_x)
     {
       y2 = Errf(x2, n_appr);
+      if (max_buf_1 < y2)
+      {
+        max_buf_1 = y2;
+      }
       painter.drawLine(QPointF(x1, y1), QPointF(x2, y2));
 
       x1 = x2, y1 = y2;
@@ -388,31 +506,38 @@ void Window::paintEvent(QPaintEvent * /* event */)
     x2 = b;
     y2 = Errf(x2, n_appr);
     painter.drawLine(QPointF(x1, y1), QPointF(x2, y2));
+
+    max_buf_2 = 0;
     painter.setPen("green");
-    Pf2_init(n_appr, a, b);
+    if (initialized_2 == 0)
+    {
+      Pf2_init(n_appr, a, b);
+      initialized_2 = 1;
+    }
     x1 = a;
-    y1 = Errf(x1, n_appr);
+    y1 = Errf_2(x1, n_appr);
     for (x2 = x1 + delta_x; x2 - b < 1.e-6; x2 += delta_x)
     {
-      y2 = Errf(x2, n_appr);
+      y2 = Errf_2(x2, n_appr);
+      if (max_buf_2 < y2)
+      {
+        max_buf_2 = y2;
+      }
       painter.drawLine(QPointF(x1, y1), QPointF(x2, y2));
 
       x1 = x2, y1 = y2;
     }
     x2 = b;
-    y2 = Errf(x2, n_appr);
+    y2 = Errf_2(x2, n_appr);
     painter.drawLine(QPointF(x1, y1), QPointF(x2, y2));
   }
 
-  // draw axis
   painter.setPen("red");
   painter.drawLine(a, 0, b, 0);
   painter.drawLine(0, max_y, 0, min_y);
 
-  // restore previously saved Coordinate System
   painter.restore();
 
-  // render function name
   painter.setPen("black");
   painter.drawText(0, 20, f_name);
   painter.drawText(0, 40, "appr points = " + QString::number(n_appr));
@@ -420,11 +545,21 @@ void Window::paintEvent(QPaintEvent * /* event */)
   if (show_graph_1 == 1 || show_graph_err == 1)
   {
     painter.setPen("blue");
-    painter.drawText(0, 60, "- method 1");
+    painter.drawText(0, 80, "- method 1");
+    if (show_graph_err == 1)
+    {
+      painter.drawText(0, 100, "Err1 = " + QString::number(max_buf_1));
+    }
   }
   if (show_graph_2 == 1 || show_graph_err == 1)
   {
     painter.setPen("green");
-    painter.drawText(0, 80, "- method 2");
+    painter.drawText(0, 140, "- method 2");
+    if (show_graph_err == 1)
+    {
+      painter.drawText(0, 160, "Err2 = " + QString::number(max_buf_2));
+    }
   }
+
+  painter.drawText(0, 200, "disturbance = " + QString::number(disturb));
 }
