@@ -7,3 +7,4 @@ HEADERS += method_compute.h
 HEADERS += method1_init.h
 HEADERS += method2_init.h
 SOURCES += method2_init.cpp 
+QT += widgets

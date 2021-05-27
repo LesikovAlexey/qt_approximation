@@ -394,7 +394,7 @@ void Window::paintEvent(QPaintEvent * )
   n = width();
   double delta_y, delta_x = (b - a) / (n * scale_parameter);
 
-  painter.setPen("black");
+  
   max_y = min_y = 0;
   for (x1 = a; x1 - b < 1.e-6; x1 += delta_x)
   {
@@ -408,7 +408,7 @@ void Window::paintEvent(QPaintEvent * )
   delta_y = 0.01 * (max_y - min_y);
   min_y -= delta_y;
   max_y += delta_y;
-
+  painter.setPen(QPen(Qt::black, 10/height()));
   painter.save();
 
   painter.translate(0.5 * width(), 0.5 * height());
@@ -438,7 +438,7 @@ void Window::paintEvent(QPaintEvent * )
 
   if (show_graph_1 == 1)
   {
-    painter.setPen("blue");
+    painter.setPen(QPen(Qt::blue, 10/height()));
     if (initialized == 0)
     {
       Pf_init(n_appr, a, b);
@@ -460,7 +460,7 @@ void Window::paintEvent(QPaintEvent * )
 
   if (show_graph_2 == 1)
   {
-    painter.setPen("green");
+    painter.setPen(QPen(Qt::darkGreen, 10/height()));
     if (initialized_2 == 0)
     {
       Pf2_init(n_appr, a, b);
@@ -483,7 +483,7 @@ void Window::paintEvent(QPaintEvent * )
   if (show_graph_err == 1)
   {
     max_buf_1 = 0;
-    painter.setPen("blue");
+    painter.setPen(QPen(Qt::blue, 10/height()));
     if (initialized == 0)
     {
       Pf_init(n_appr, a, b);
@@ -508,7 +508,7 @@ void Window::paintEvent(QPaintEvent * )
     painter.drawLine(QPointF(x1, y1), QPointF(x2, y2));
 
     max_buf_2 = 0;
-    painter.setPen("green");
+    painter.setPen(QPen(Qt::darkGreen, 10/height()));
     if (initialized_2 == 0)
     {
       Pf2_init(n_appr, a, b);
@@ -532,19 +532,19 @@ void Window::paintEvent(QPaintEvent * )
     painter.drawLine(QPointF(x1, y1), QPointF(x2, y2));
   }
 
-  painter.setPen("red");
+  painter.setPen(QPen(Qt::red, 10/height()));
   painter.drawLine(a, 0, b, 0);
   painter.drawLine(0, max_y, 0, min_y);
 
   painter.restore();
 
-  painter.setPen("black");
+  painter.setPen(QPen(Qt::black, 10/height()));
   painter.drawText(0, 20, f_name);
   painter.drawText(0, 40, "appr points = " + QString::number(n_appr));
 
   if (show_graph_1 == 1 || show_graph_err == 1)
   {
-    painter.setPen("blue");
+    painter.setPen(QPen(Qt::blue, 10/height()));
     painter.drawText(0, 80, "- method 1");
     if (show_graph_err == 1)
     {
@@ -553,7 +553,7 @@ void Window::paintEvent(QPaintEvent * )
   }
   if (show_graph_2 == 1 || show_graph_err == 1)
   {
-    painter.setPen("green");
+    painter.setPen(QPen(Qt::darkGreen, 10/height()));
     painter.drawText(0, 140, "- method 2");
     if (show_graph_err == 1)
     {

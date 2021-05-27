@@ -4,6 +4,7 @@
 
 #include <QWidget>
 #include <QMessageBox>
+#include <QString>
 
 #include "method_compute.h"
 #include "method1_init.h"

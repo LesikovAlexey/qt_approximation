@@ -5,6 +5,7 @@
 #include <QAction>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QString>
 
 #include "window.h"
 
@@ -65,7 +66,6 @@ int main(int argc, char *argv[])
   window->setMenuBar(tool_bar);
   window->setCentralWidget(graph_area);
   window->setWindowTitle("Graph");
-
   window->show();
   return app.exec();
 }
